@@ -247,64 +247,6 @@ namespace K4ryuuDamageInfo
 			return HookResult.Continue;
 		}
 
-        //private void DisplayDamageInfo(CCSPlayerController player)
-        //{
-        //	if (IsDataShown[player.Slot])
-        //		return;
-
-        //	if (Config.ShowAllDamages)
-        //	{
-        //		Dictionary<int, (DamageInfo given, DamageInfo taken)>? allPlayerSummaries = new Dictionary<int, (DamageInfo given, DamageInfo taken)>();
-
-        //		IsDataShown[player.Slot] = true;
-
-        //		foreach (var playerDamage in playerDamageInfos)
-        //		{
-        //			allPlayerSummaries[playerDamage.Key] = SummarizePlayerDamage(playerDamage.Value);
-        //		}
-
-        //		if (allPlayerSummaries.Count == 0)
-        //			return;
-
-        //		player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
-
-        //		foreach (var summary in allPlayerSummaries)
-        //		{
-        //			CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(summary.Key);
-        //			if (Config.ShowAllDamagesTeamOnly && otherPlayer?.TeamNum == player.TeamNum)
-        //				continue;
-
-        //			int otherPlayerHealth = 0;
-        //			string otherPlayerName = "Unknown";
-
-        //			if (otherPlayer?.IsValid == true)
-        //			{
-        //				otherPlayerName = otherPlayer.PlayerName;
-        //				otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
-        //			}
-
-        //			string otherPlayerHealthString = otherPlayerHealth > 0
-        //									   ? $"{otherPlayerHealth}HP"
-        //									   : $"{Localizer["phrases.dead"]}";
-
-        //			player.PrintToChat($" {Localizer["phrases.summary.dataline",
-        //				summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
-        //				summary.Value.given.TotalDamage, summary.Value.given.Hits,
-        //				otherPlayerName, otherPlayerHealthString]}");
-        //		}
-
-        //		player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
-        //	}
-        //	else
-        //	{
-        //		if (!playerDamageInfos.ContainsKey(player.Slot) || playerDamageInfos[player.Slot] is null)
-        //			return;
-
-        //		IsDataShown[player.Slot] = true;
-        //		DisplayPlayerDamageInfo(player, playerDamageInfos[player.Slot]);
-        //	}
-        //}
-
         private void DisplayDamageInfo(CCSPlayerController player)
         {
             if (IsDataShown[player.Slot])
@@ -378,11 +320,6 @@ namespace K4ryuuDamageInfo
                                        ? $"{otherPlayerHealth}HP"
                                        : $"{Localizer["phrases.dead"]}";
 
-            //player.PrintToChat($" {Localizer["phrases.summary.dataline",
-            //    summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
-            //    summary.Value.given.TotalDamage, summary.Value.given.Hits,
-            //    otherPlayerName, otherPlayerHealthString]}");
-
             player.PrintToChat($" {Localizer["phrases.summary.dataline", 
                 otherPlayerName, otherPlayerHealthString,
                 summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
@@ -408,78 +345,6 @@ namespace K4ryuuDamageInfo
 
 			return (totalGivenDamage, totalTakenDamage);
 		}
-
-        //private void DisplayPlayerDamageInfo(CCSPlayerController player, PlayerDamageInfo playerInfo)
-        //{
-        //	bool printed = false;
-        //	HashSet<int> processedPlayers = new HashSet<int>();
-
-        //	foreach (KeyValuePair<int, DamageInfo> entry in playerInfo.GivenDamage)
-        //	{
-        //		int otherPlayerId = entry.Key;
-
-        //		if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
-        //			continue;
-
-        //		if (!printed)
-        //			player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
-
-        //		printed = true;
-
-        //		DamageInfo givenDamageInfo = entry.Value;
-        //		DamageInfo takenDamageInfo = playerInfo.TakenDamage.ContainsKey(otherPlayerId) ? playerInfo.TakenDamage[otherPlayerId] : new DamageInfo();
-        //		processedPlayers.Add(otherPlayerId);
-
-        //		int otherPlayerHealth = 0;
-        //		string otherPlayerName = "Unknown";
-
-        //		CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
-        //		if (otherPlayer?.IsValid == true)
-        //		{
-        //			otherPlayerName = otherPlayer.PlayerName;
-        //			otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
-        //		}
-
-        //		//player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
-        //              // Change to PlayerName[HP], damage output, damage input
-        //              player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
-
-        //          }
-
-        //          foreach (KeyValuePair<int, DamageInfo> entry in playerInfo.TakenDamage)
-        //	{
-        //		int otherPlayerId = entry.Key;
-
-        //		if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
-        //			continue;
-
-        //		if (processedPlayers.Contains(otherPlayerId))
-        //			continue;
-
-        //		if (!printed)
-        //			player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
-
-        //		printed = true;
-
-        //		DamageInfo takenDamageInfo = entry.Value;
-        //		DamageInfo givenDamageInfo = new DamageInfo();
-
-        //		int otherPlayerHealth = 0;
-        //		string otherPlayerName = "Unknown";
-
-        //		CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
-        //		if (otherPlayer?.IsValid == true)
-        //		{
-        //			otherPlayerName = otherPlayer.PlayerName;
-        //			otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
-        //		}
-
-        //		player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
-        //	}
-
-        //	if (printed)
-        //		player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
-        //}
 
         private void DisplayPlayerDamageInfo(CCSPlayerController player, PlayerDamageInfo playerInfo)
         {
