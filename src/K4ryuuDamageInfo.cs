@@ -269,22 +269,24 @@ namespace K4ryuuDamageInfo
                 player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
 
                 // Sort and take top 5 damages based on TotalDamage
-                var topTakenDamages = allPlayerSummaries
-                    .OrderByDescending(summary => summary.Value.taken.TotalDamage)
-                    .Take(5);
-
                 var topGivenDamages = allPlayerSummaries
                     .OrderByDescending(summary => summary.Value.given.TotalDamage)
                     .Take(5);
 
-                // Print top 5 damages taken
-                foreach (var summary in topTakenDamages)
+                var topTakenDamages = allPlayerSummaries
+                    .OrderByDescending(summary => summary.Value.taken.TotalDamage)
+                    .Take(5);
+
+                // Print top 5 damages given
+                foreach (var summary in topGivenDamages)
                 {
                     PrintDamageSummary(player, summary);
                 }
 
-                // Print top 5 damages given
-                foreach (var summary in topGivenDamages)
+                player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
+
+                // Print top 5 damages taken
+                foreach (var summary in topTakenDamages)
                 {
                     PrintDamageSummary(player, summary);
                 }
@@ -328,19 +330,19 @@ namespace K4ryuuDamageInfo
 
         private (DamageInfo given, DamageInfo taken) SummarizePlayerDamage(PlayerDamageInfo playerInfo)
 		{
-			DamageInfo totalGivenDamage = new DamageInfo();
-			DamageInfo totalTakenDamage = new DamageInfo();
+            DamageInfo totalTakenDamage = new DamageInfo();
+            DamageInfo totalGivenDamage = new DamageInfo();
 
-			foreach (var given in playerInfo.GivenDamage)
+            foreach (var taken in playerInfo.TakenDamage)
+            {
+                totalTakenDamage.TotalDamage += taken.Value.TotalDamage;
+                totalTakenDamage.Hits += taken.Value.Hits;
+            }
+
+            foreach (var given in playerInfo.GivenDamage)
 			{
 				totalGivenDamage.TotalDamage += given.Value.TotalDamage;
 				totalGivenDamage.Hits += given.Value.Hits;
-			}
-
-			foreach (var taken in playerInfo.TakenDamage)
-			{
-				totalTakenDamage.TotalDamage += taken.Value.TotalDamage;
-				totalTakenDamage.Hits += taken.Value.Hits;
 			}
 
 			return (totalGivenDamage, totalTakenDamage);
