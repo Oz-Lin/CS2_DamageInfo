@@ -486,43 +486,6 @@ namespace K4ryuuDamageInfo
             bool printed = false;
             List<int> processedPlayers = new List<int>();
 
-            // Sort the GivenDamage dictionary by TotalDamage in descending order and take the top 5 entries
-            var sortedGivenDamage = playerInfo.GivenDamage
-                .OrderByDescending(entry => entry.Value.TotalDamage)
-                .Take(5);
-
-            foreach (var entry in sortedGivenDamage)
-            {
-                int otherPlayerId = entry.Key;
-
-                if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
-                    continue;
-
-                if (!printed)
-                {
-                    player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
-                    printed = true;
-                }
-
-                DamageInfo givenDamageInfo = entry.Value;
-                DamageInfo takenDamageInfo = playerInfo.TakenDamage.ContainsKey(otherPlayerId) ? playerInfo.TakenDamage[otherPlayerId] : new DamageInfo();
-                processedPlayers.Add(otherPlayerId);
-
-                string otherPlayerName = "Unknown";
-                int otherPlayerHealth = 0;
-
-                CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
-                if (otherPlayer?.IsValid == true)
-                {
-                    otherPlayerName = otherPlayer.PlayerName;
-                    otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
-                }
-
-                string healthStatus = otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}";
-
-                player.PrintToChat($" {Localizer["phrases.summary.dataline", otherPlayerName, healthStatus, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, givenDamageInfo.TotalDamage, givenDamageInfo.Hits]}");
-            }
-
             // Sort the TakenDamage dictionary by TotalDamage in descending order and take the top 5 entries
             var sortedTakenDamage = playerInfo.TakenDamage
                 .OrderByDescending(entry => entry.Value.TotalDamage)
@@ -547,6 +510,43 @@ namespace K4ryuuDamageInfo
 
                 DamageInfo takenDamageInfo = entry.Value;
                 DamageInfo givenDamageInfo = new DamageInfo();  // No need to fetch given damage again since it's processed already
+
+                string otherPlayerName = "Unknown";
+                int otherPlayerHealth = 0;
+
+                CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
+                if (otherPlayer?.IsValid == true)
+                {
+                    otherPlayerName = otherPlayer.PlayerName;
+                    otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
+                }
+
+                string healthStatus = otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}";
+
+                player.PrintToChat($" {Localizer["phrases.summary.dataline", otherPlayerName, healthStatus, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, givenDamageInfo.TotalDamage, givenDamageInfo.Hits]}");
+            }
+
+            // Sort the GivenDamage dictionary by TotalDamage in descending order and take the top 5 entries
+            var sortedGivenDamage = playerInfo.GivenDamage
+                .OrderByDescending(entry => entry.Value.TotalDamage)
+                .Take(5);
+
+            foreach (var entry in sortedGivenDamage)
+            {
+                int otherPlayerId = entry.Key;
+
+                if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
+                    continue;
+
+                if (!printed)
+                {
+                    player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
+                    printed = true;
+                }
+
+                DamageInfo givenDamageInfo = entry.Value;
+                DamageInfo takenDamageInfo = playerInfo.TakenDamage.ContainsKey(otherPlayerId) ? playerInfo.TakenDamage[otherPlayerId] : new DamageInfo();
+                processedPlayers.Add(otherPlayerId);
 
                 string otherPlayerName = "Unknown";
                 int otherPlayerHealth = 0;
