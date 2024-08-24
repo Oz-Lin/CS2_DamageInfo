@@ -56,9 +56,9 @@ namespace K4ryuuDamageInfo
 	[MinimumApiVersion(244)]
 	public class DamageInfoPlugin : BasePlugin, IPluginConfig<PluginConfig>
 	{
-		public override string ModuleName => "Damage Informations";
+		public override string ModuleName => "Damage Information (Zombie Mode)";
 		public override string ModuleVersion => "2.3.3";
-		public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
+		public override string ModuleAuthor => "K4ryuu @ KitsuneLab, Oz-Lin";
 
 		public required PluginConfig Config { get; set; } = new PluginConfig();
 		public CCSGameRules? GameRules;
@@ -247,65 +247,144 @@ namespace K4ryuuDamageInfo
 			return HookResult.Continue;
 		}
 
-		private void DisplayDamageInfo(CCSPlayerController player)
-		{
-			if (IsDataShown[player.Slot])
-				return;
+        //private void DisplayDamageInfo(CCSPlayerController player)
+        //{
+        //	if (IsDataShown[player.Slot])
+        //		return;
 
-			if (Config.ShowAllDamages)
-			{
-				Dictionary<int, (DamageInfo given, DamageInfo taken)>? allPlayerSummaries = new Dictionary<int, (DamageInfo given, DamageInfo taken)>();
+        //	if (Config.ShowAllDamages)
+        //	{
+        //		Dictionary<int, (DamageInfo given, DamageInfo taken)>? allPlayerSummaries = new Dictionary<int, (DamageInfo given, DamageInfo taken)>();
 
-				IsDataShown[player.Slot] = true;
+        //		IsDataShown[player.Slot] = true;
 
-				foreach (var playerDamage in playerDamageInfos)
-				{
-					allPlayerSummaries[playerDamage.Key] = SummarizePlayerDamage(playerDamage.Value);
-				}
+        //		foreach (var playerDamage in playerDamageInfos)
+        //		{
+        //			allPlayerSummaries[playerDamage.Key] = SummarizePlayerDamage(playerDamage.Value);
+        //		}
 
-				if (allPlayerSummaries.Count == 0)
-					return;
+        //		if (allPlayerSummaries.Count == 0)
+        //			return;
 
-				player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
+        //		player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
 
-				foreach (var summary in allPlayerSummaries)
-				{
-					CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(summary.Key);
-					if (Config.ShowAllDamagesTeamOnly && otherPlayer?.TeamNum == player.TeamNum)
-						continue;
+        //		foreach (var summary in allPlayerSummaries)
+        //		{
+        //			CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(summary.Key);
+        //			if (Config.ShowAllDamagesTeamOnly && otherPlayer?.TeamNum == player.TeamNum)
+        //				continue;
 
-					int otherPlayerHealth = 0;
-					string otherPlayerName = "Unknown";
+        //			int otherPlayerHealth = 0;
+        //			string otherPlayerName = "Unknown";
 
-					if (otherPlayer?.IsValid == true)
-					{
-						otherPlayerName = otherPlayer.PlayerName;
-						otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
-					}
+        //			if (otherPlayer?.IsValid == true)
+        //			{
+        //				otherPlayerName = otherPlayer.PlayerName;
+        //				otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
+        //			}
 
-					string otherPlayerHealthString = otherPlayerHealth > 0
-											   ? $"{otherPlayerHealth}HP"
-											   : $"{Localizer["phrases.dead"]}";
+        //			string otherPlayerHealthString = otherPlayerHealth > 0
+        //									   ? $"{otherPlayerHealth}HP"
+        //									   : $"{Localizer["phrases.dead"]}";
 
-					player.PrintToChat($" {Localizer["phrases.summary.dataline",
-						summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
-						summary.Value.given.TotalDamage, summary.Value.given.Hits,
-						otherPlayerName, otherPlayerHealthString]}");
-				}
+        //			player.PrintToChat($" {Localizer["phrases.summary.dataline",
+        //				summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
+        //				summary.Value.given.TotalDamage, summary.Value.given.Hits,
+        //				otherPlayerName, otherPlayerHealthString]}");
+        //		}
 
-				player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
-			}
-			else
-			{
-				if (!playerDamageInfos.ContainsKey(player.Slot) || playerDamageInfos[player.Slot] is null)
-					return;
+        //		player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
+        //	}
+        //	else
+        //	{
+        //		if (!playerDamageInfos.ContainsKey(player.Slot) || playerDamageInfos[player.Slot] is null)
+        //			return;
 
-				IsDataShown[player.Slot] = true;
-				DisplayPlayerDamageInfo(player, playerDamageInfos[player.Slot]);
-			}
-		}
+        //		IsDataShown[player.Slot] = true;
+        //		DisplayPlayerDamageInfo(player, playerDamageInfos[player.Slot]);
+        //	}
+        //}
 
-		private (DamageInfo given, DamageInfo taken) SummarizePlayerDamage(PlayerDamageInfo playerInfo)
+        private void DisplayDamageInfo(CCSPlayerController player)
+        {
+            if (IsDataShown[player.Slot])
+                return;
+
+            if (Config.ShowAllDamages)
+            {
+                Dictionary<int, (DamageInfo given, DamageInfo taken)>? allPlayerSummaries = new Dictionary<int, (DamageInfo given, DamageInfo taken)>();
+
+                IsDataShown[player.Slot] = true;
+
+                foreach (var playerDamage in playerDamageInfos)
+                {
+                    allPlayerSummaries[playerDamage.Key] = SummarizePlayerDamage(playerDamage.Value);
+                }
+
+                if (allPlayerSummaries.Count == 0)
+                    return;
+
+                player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
+
+                // Sort and take top 5 damages based on TotalDamage
+                var topTakenDamages = allPlayerSummaries
+                    .OrderByDescending(summary => summary.Value.taken.TotalDamage)
+                    .Take(5);
+
+                var topGivenDamages = allPlayerSummaries
+                    .OrderByDescending(summary => summary.Value.given.TotalDamage)
+                    .Take(5);
+
+                // Print top 5 damages taken
+                foreach (var summary in topTakenDamages)
+                {
+                    PrintDamageSummary(player, summary);
+                }
+
+                // Print top 5 damages given
+                foreach (var summary in topGivenDamages)
+                {
+                    PrintDamageSummary(player, summary);
+                }
+
+                player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
+            }
+            else
+            {
+                if (!playerDamageInfos.ContainsKey(player.Slot) || playerDamageInfos[player.Slot] is null)
+                    return;
+
+                IsDataShown[player.Slot] = true;
+                DisplayPlayerDamageInfo(player, playerDamageInfos[player.Slot]);
+            }
+        }
+
+        private void PrintDamageSummary(CCSPlayerController player, KeyValuePair<int, (DamageInfo given, DamageInfo taken)> summary)
+        {
+            CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(summary.Key);
+            if (Config.ShowAllDamagesTeamOnly && otherPlayer?.TeamNum == player.TeamNum)
+                return;
+
+            int otherPlayerHealth = 0;
+            string otherPlayerName = "Unknown";
+
+            if (otherPlayer?.IsValid == true)
+            {
+                otherPlayerName = otherPlayer.PlayerName;
+                otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
+            }
+
+            string otherPlayerHealthString = otherPlayerHealth > 0
+                                       ? $"{otherPlayerHealth}HP"
+                                       : $"{Localizer["phrases.dead"]}";
+
+            player.PrintToChat($" {Localizer["phrases.summary.dataline",
+                summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
+                summary.Value.given.TotalDamage, summary.Value.given.Hits,
+                otherPlayerName, otherPlayerHealthString]}");
+        }
+
+        private (DamageInfo given, DamageInfo taken) SummarizePlayerDamage(PlayerDamageInfo playerInfo)
 		{
 			DamageInfo totalGivenDamage = new DamageInfo();
 			DamageInfo totalTakenDamage = new DamageInfo();
@@ -325,76 +404,168 @@ namespace K4ryuuDamageInfo
 			return (totalGivenDamage, totalTakenDamage);
 		}
 
-		private void DisplayPlayerDamageInfo(CCSPlayerController player, PlayerDamageInfo playerInfo)
-		{
-			bool printed = false;
-			HashSet<int> processedPlayers = new HashSet<int>();
+        //private void DisplayPlayerDamageInfo(CCSPlayerController player, PlayerDamageInfo playerInfo)
+        //{
+        //	bool printed = false;
+        //	HashSet<int> processedPlayers = new HashSet<int>();
 
-			foreach (KeyValuePair<int, DamageInfo> entry in playerInfo.GivenDamage)
-			{
-				int otherPlayerId = entry.Key;
+        //	foreach (KeyValuePair<int, DamageInfo> entry in playerInfo.GivenDamage)
+        //	{
+        //		int otherPlayerId = entry.Key;
 
-				if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
-					continue;
+        //		if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
+        //			continue;
 
-				if (!printed)
-					player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
+        //		if (!printed)
+        //			player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
 
-				printed = true;
+        //		printed = true;
 
-				DamageInfo givenDamageInfo = entry.Value;
-				DamageInfo takenDamageInfo = playerInfo.TakenDamage.ContainsKey(otherPlayerId) ? playerInfo.TakenDamage[otherPlayerId] : new DamageInfo();
-				processedPlayers.Add(otherPlayerId);
+        //		DamageInfo givenDamageInfo = entry.Value;
+        //		DamageInfo takenDamageInfo = playerInfo.TakenDamage.ContainsKey(otherPlayerId) ? playerInfo.TakenDamage[otherPlayerId] : new DamageInfo();
+        //		processedPlayers.Add(otherPlayerId);
 
-				int otherPlayerHealth = 0;
-				string otherPlayerName = "Unknown";
+        //		int otherPlayerHealth = 0;
+        //		string otherPlayerName = "Unknown";
 
-				CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
-				if (otherPlayer?.IsValid == true)
-				{
-					otherPlayerName = otherPlayer.PlayerName;
-					otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
-				}
+        //		CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
+        //		if (otherPlayer?.IsValid == true)
+        //		{
+        //			otherPlayerName = otherPlayer.PlayerName;
+        //			otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
+        //		}
 
-				player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
-			}
+        //		//player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
+        //              // Change to PlayerName[HP], damage output, damage input
+        //              player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
 
-			foreach (KeyValuePair<int, DamageInfo> entry in playerInfo.TakenDamage)
-			{
-				int otherPlayerId = entry.Key;
+        //          }
 
-				if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
-					continue;
+        //          foreach (KeyValuePair<int, DamageInfo> entry in playerInfo.TakenDamage)
+        //	{
+        //		int otherPlayerId = entry.Key;
 
-				if (processedPlayers.Contains(otherPlayerId))
-					continue;
+        //		if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
+        //			continue;
 
-				if (!printed)
-					player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
+        //		if (processedPlayers.Contains(otherPlayerId))
+        //			continue;
 
-				printed = true;
+        //		if (!printed)
+        //			player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
 
-				DamageInfo takenDamageInfo = entry.Value;
-				DamageInfo givenDamageInfo = new DamageInfo();
+        //		printed = true;
 
-				int otherPlayerHealth = 0;
-				string otherPlayerName = "Unknown";
+        //		DamageInfo takenDamageInfo = entry.Value;
+        //		DamageInfo givenDamageInfo = new DamageInfo();
 
-				CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
-				if (otherPlayer?.IsValid == true)
-				{
-					otherPlayerName = otherPlayer.PlayerName;
-					otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
-				}
+        //		int otherPlayerHealth = 0;
+        //		string otherPlayerName = "Unknown";
 
-				player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
-			}
+        //		CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
+        //		if (otherPlayer?.IsValid == true)
+        //		{
+        //			otherPlayerName = otherPlayer.PlayerName;
+        //			otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
+        //		}
 
-			if (printed)
-				player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
-		}
+        //		player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}"]}");
+        //	}
 
-		private Dictionary<int, PlayerDamageInfo> playerDamageInfos = new Dictionary<int, PlayerDamageInfo>();
+        //	if (printed)
+        //		player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
+        //}
+
+        private void DisplayPlayerDamageInfo(CCSPlayerController player, PlayerDamageInfo playerInfo)
+        {
+            bool printed = false;
+            List<int> processedPlayers = new List<int>();
+
+            // Sort the GivenDamage dictionary by TotalDamage in descending order and take the top 5 entries
+            var sortedGivenDamage = playerInfo.GivenDamage
+                .OrderByDescending(entry => entry.Value.TotalDamage)
+                .Take(5);
+
+            foreach (var entry in sortedGivenDamage)
+            {
+                int otherPlayerId = entry.Key;
+
+                if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
+                    continue;
+
+                if (!printed)
+                {
+                    player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
+                    printed = true;
+                }
+
+                DamageInfo givenDamageInfo = entry.Value;
+                DamageInfo takenDamageInfo = playerInfo.TakenDamage.ContainsKey(otherPlayerId) ? playerInfo.TakenDamage[otherPlayerId] : new DamageInfo();
+                processedPlayers.Add(otherPlayerId);
+
+                string otherPlayerName = "Unknown";
+                int otherPlayerHealth = 0;
+
+                CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
+                if (otherPlayer?.IsValid == true)
+                {
+                    otherPlayerName = otherPlayer.PlayerName;
+                    otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
+                }
+
+                string healthStatus = otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}";
+
+                player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, healthStatus]}");
+            }
+
+            // Sort the TakenDamage dictionary by TotalDamage in descending order and take the top 5 entries
+            var sortedTakenDamage = playerInfo.TakenDamage
+                .OrderByDescending(entry => entry.Value.TotalDamage)
+                .Take(5);
+
+            foreach (var entry in sortedTakenDamage)
+            {
+                int otherPlayerId = entry.Key;
+
+                if (Config.ShowOnlyKiller && VictimKiller[player.Slot] != otherPlayerId)
+                    continue;
+
+                // Skip already processed players from the given damage
+                if (processedPlayers.Contains(otherPlayerId))
+                    continue;
+
+                if (!printed)
+                {
+                    player.PrintToChat($" {Localizer["phrases.summary.startline"]}");
+                    printed = true;
+                }
+
+                DamageInfo takenDamageInfo = entry.Value;
+                DamageInfo givenDamageInfo = new DamageInfo();  // No need to fetch given damage again since it's processed already
+
+                string otherPlayerName = "Unknown";
+                int otherPlayerHealth = 0;
+
+                CCSPlayerController? otherPlayer = Utilities.GetPlayerFromSlot(otherPlayerId);
+                if (otherPlayer?.IsValid == true)
+                {
+                    otherPlayerName = otherPlayer.PlayerName;
+                    otherPlayerHealth = otherPlayer.PlayerPawn?.IsValid == true && otherPlayer.Connected == PlayerConnectedState.PlayerConnected ? otherPlayer.PlayerPawn.Value?.Health ?? 0 : 0;
+                }
+
+                string healthStatus = otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}";
+
+                player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, healthStatus]}");
+            }
+
+            if (printed)
+                player.PrintToChat($" {Localizer["phrases.summary.endline"]}");
+        }
+
+
+
+
+        private Dictionary<int, PlayerDamageInfo> playerDamageInfos = new Dictionary<int, PlayerDamageInfo>();
 
 		private class PlayerDamageInfo
 		{
