@@ -1,6 +1,6 @@
 {
 	"phrases.summary.startline": "▬▬▬▬▬▬▬▬▬▬▬▬▬ Statystyki ▬▬▬▬▬▬▬▬▬▬▬▬▬",
-	"phrases.summary.dataline": "{lime}➜ {white}Zadane: [{lime}{0} / {1} hits{white}] Otrzymane: [{lightred}{2} / {3} hits{white}] - {4} [{lightred}{5}{white}]",
+	"phrases.summary.dataline": "{lime}➜ {white}{0} [{lightred}{1}{white}] Output: [{lime}{4} / {5} hits{white}] {white}Recv: [{lightred}{2} / {3} hits{white}]",
 	"phrases.summary.endline": "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬",
 	"phrases.center.deadly": "Otrzymane obrażenia:\nHP {0} | HitGroup: {1}",
 	"phrases.center.normal": "Zadane obrażenia:\nHP {0} | Kamizelka {1} | HitGroup: {2}",

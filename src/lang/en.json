@@ -1,6 +1,6 @@
 {
 	"phrases.summary.startline": "▬▬▬▬▬▬▬▬▬▬▬▬▬ Statistics ▬▬▬▬▬▬▬▬▬▬▬▬▬",
-	"phrases.summary.dataline": "{lime}➜ {white}To: [{lime}{0} / {1} hits{white}] From: [{lightred}{2} / {3} hits{white}] - {4} [{lightred}{5}{white}]",
+	"phrases.summary.dataline": "{lime}➜ {white}{0} [{lightred}{1}{white}] Output: [{lime}{4} / {5} hits{white}] {white}Recv: [{lightred}{2} / {3} hits{white}]",
 	"phrases.summary.endline": "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬",
 	"phrases.center.deadly": "Damage Given:\nHP {0} | HitGroup: {1}",
 	"phrases.center.normal": "Damage Given:\nHP {0} | Armor {1} | HitGroup: {2}",

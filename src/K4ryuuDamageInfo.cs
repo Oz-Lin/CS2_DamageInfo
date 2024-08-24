@@ -378,10 +378,15 @@ namespace K4ryuuDamageInfo
                                        ? $"{otherPlayerHealth}HP"
                                        : $"{Localizer["phrases.dead"]}";
 
-            player.PrintToChat($" {Localizer["phrases.summary.dataline",
+            //player.PrintToChat($" {Localizer["phrases.summary.dataline",
+            //    summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
+            //    summary.Value.given.TotalDamage, summary.Value.given.Hits,
+            //    otherPlayerName, otherPlayerHealthString]}");
+
+            player.PrintToChat($" {Localizer["phrases.summary.dataline", 
+                otherPlayerName, otherPlayerHealthString,
                 summary.Value.taken.TotalDamage, summary.Value.taken.Hits,
-                summary.Value.given.TotalDamage, summary.Value.given.Hits,
-                otherPlayerName, otherPlayerHealthString]}");
+                summary.Value.given.TotalDamage, summary.Value.given.Hits]}");
         }
 
         private (DamageInfo given, DamageInfo taken) SummarizePlayerDamage(PlayerDamageInfo playerInfo)
@@ -515,7 +520,7 @@ namespace K4ryuuDamageInfo
 
                 string healthStatus = otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}";
 
-                player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, healthStatus]}");
+                player.PrintToChat($" {Localizer["phrases.summary.dataline", otherPlayerName, healthStatus, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, givenDamageInfo.TotalDamage, givenDamageInfo.Hits]}");
             }
 
             // Sort the TakenDamage dictionary by TotalDamage in descending order and take the top 5 entries
@@ -555,7 +560,7 @@ namespace K4ryuuDamageInfo
 
                 string healthStatus = otherPlayerHealth > 0 ? $"{otherPlayerHealth}HP" : $"{Localizer["phrases.dead"]}";
 
-                player.PrintToChat($" {Localizer["phrases.summary.dataline", givenDamageInfo.TotalDamage, givenDamageInfo.Hits, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, otherPlayerName, healthStatus]}");
+                player.PrintToChat($" {Localizer["phrases.summary.dataline", otherPlayerName, healthStatus, takenDamageInfo.TotalDamage, takenDamageInfo.Hits, givenDamageInfo.TotalDamage, givenDamageInfo.Hits]}");
             }
 
             if (printed)
